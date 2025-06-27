@@ -1,0 +1,46 @@
+{
+  "files": [],
+  "references": [
+    {
+      "path": "./tsconfig.app.json"
+    },
+    {
+      "path": "./tsconfig.node.json"
+    }
+  ],
+  "compilerOptions": {
+    "baseUrl": ".",
+    "target": "ES2022", // Updated to match tsconfig.node.json for consistency across configurations
+    "lib": [
+      "ES2020",
+      "DOM",
+      "DOM.Iterable"
+    ], // Updated to match tsconfig.app.json for consistent type definitions
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true, // Enable strict type-checking for better code quality; disable temporarily if it causes too many errors
+    "noEmit": false,
+    "incremental": true,
+    "composite": true, // Enable composite for project references, aligning with tsconfig.app.json and tsconfig.node.json
+    "module": "esnext",
+    "esModuleInterop": true,
+    "moduleResolution": "bundler", // Changed to align with tsconfig.app.json and tsconfig.node.json for Vite compatibility; revert to "node" if issues arise with Next.js
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
+  },
+  "include": [
+    "next-env.d.ts",
+    ".next/types/**/*.ts",
+    "**/*.ts",
+    "**/*.tsx"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}
