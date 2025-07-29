@@ -8,7 +8,11 @@ interface Message {
   personality?: string;
 }
 
-export function ChatInterface() {
+interface ChatInterfaceProps {
+  onClose: () => void;
+}
+
+export function ChatInterface({ onClose }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -96,6 +100,12 @@ export function ChatInterface() {
           <div className="p-2 bg-purple-500/10 rounded-xl border border-purple-500/20">
             <Sparkles className="w-6 h-6 text-purple-400" />
           </div>
+          <button
+            onClick={onClose}
+            className="p-2 text-gray-400 hover:text-white transition-colors"
+          >
+            X
+          </button>
         </div>
         
         <div className="flex flex-wrap gap-3">

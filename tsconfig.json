@@ -24,7 +24,7 @@
     "composite": true, // Enable composite for project references, aligning with tsconfig.app.json and tsconfig.node.json
     "module": "esnext",
     "esModuleInterop": true,
-    "moduleResolution": "bundler", // Changed to align with tsconfig.app.json and tsconfig.node.json for Vite compatibility; revert to "node" if issues arise with Next.js
+    "moduleResolution": "bundler", // Reverted to "bundler" after clean npm install
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
@@ -38,7 +38,8 @@
     "next-env.d.ts",
     ".next/types/**/*.ts",
     "**/*.ts",
-    "**/*.tsx"
+    "**/*.tsx",
+    "src/types/global.d.ts"
   ],
   "exclude": [
     "node_modules"

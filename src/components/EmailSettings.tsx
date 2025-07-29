@@ -6,11 +6,13 @@ export default function EmailSettings() {
   const [enabled, setEnabled] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
 
-  useEffect(() => {
-    supabase.auth.getUser().then(async ({ data }) => {
-      const id = data?.user?.id;
-      setUserId(id || null);
-      if (!id) return;
+       useEffect(() => {
+         supabase.auth.getUser().then(async ({ data, error }) => {
+           console.log('Supabase getUser data:', data);
+           console.log('Supabase getUser error:', error);
+           const id = data?.user?.id;
+           setUserId(id || null);
+           if (!id) return;
 
       const { data: pref } = await supabase
         .from('preferences')

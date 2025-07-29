@@ -1,54 +1,66 @@
 import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
-import { createClient } from '@supabase/supabase-js';
+import { createRouteHandlerClient } from '@supabase/ssr/server'; // Corrected import path
+import { cookies } from 'next/headers';
 
-// ✅ Initialize Supabase Admin client (server-side only)
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
-
-// ✅ Initialize Resend client
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST() {
-  // 1. Get current user (server request context)
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
+  const supabase = createRouteHandlerClient({ cookies });
+
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  console.log('Supabase getUser (server-side) data:', user);
+  console.log('Supabase getUser (server-side) error:', authError);
 
   if (authError || !user?.email) {
     return NextResponse.json({ error: 'User not found or not logged in' }, { status: 401 });
   }
 
-  const email = user.email;
+  // Get all users who enabled email_digest
+  const { data: preferences, error } = await supabase
+    .from('preferences')
+    .select('user_id')
+    .eq('email_digest', true);
 
-  // 2. Create email content
-  const html = `
-    <div style="font-family: sans-serif; padding: 20px;">
-      <h2>📬 Your Daily Culture Digest</h2>
-      <ul>
-        <li><strong>Twitter:</strong> Elon roasted again 🐦🔥</li>
-        <li><strong>Reddit:</strong> New Skibidi Doge meme everywhere 😂</li>
-        <li><strong>AI Tools:</strong> Gemini now doing video analysis 🎥🤖</li>
-      </ul>
-      <p style="margin-top: 16px;">Sent by your Real-Time Culture Radar 🧠</p>
-    </div>
-  `;
-
-  // 3. Send using Resend
-  const { error } = await resend.emails.send({
-    from: 'CultureRadar <onboarding@resend.dev>',
-    to: email,
-    subject: '🔥 Your Culture Trends for Today',
-    html,
-  });
-
-  if (error) {
-    console.error('Email error:', error);
-    return NextResponse.json({ error }, { status: 500 });
+  if (error || !preferences) {
+    return NextResponse.json({ error: 'No subscribed users' }, { status: 400 });
   }
 
-  return NextResponse.json({ success: true });
+  // Fetch emails for all user_ids
+  const emails: string[] = [];
+
+  for (const pref of preferences) {
+    const { data: userData } = await supabase
+      .from('users') // if you're using custom user table (skip if not)
+      .select('email')
+      .eq('id', pref.user_id)
+      .single();
+
+    if (userData?.email) emails.push(userData.email);
+  }
+
+  // Or simpler: use Auth API
+  // ⚠️ Supabase free tier may not let you query all users via Auth
+  // Ideally store email in preferences during sign-up
+
+  // Send to each email
+  for (const email of emails) {
+    await resend.emails.send({
+      from: 'CultureRadar <onboarding@resend.dev>',
+      to: email,
+      subject: '🔥 Your Culture Digest for Today',
+      html: `
+        <div style="font-family: sans-serif;">
+          <h2>📬 Trending Today</h2>
+          <ul>
+            <li>TikTok: New NPC remix trending</li>
+            <li>Reddit: “Reverse Uno” meme comeback</li>
+            <li>AI Tools: “AutoVid AI” launch</li>
+          </ul>
+        </div>
+      `,
+    });
+  }
+
+  return NextResponse.json({ success: true, sent: emails.length });
 }

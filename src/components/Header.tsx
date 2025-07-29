@@ -4,10 +4,12 @@ import { ProfileModal } from './ProfileModal';
 import { MessageSquare } from 'lucide-react'; // Import the chat icon
 
 interface HeaderProps {
-  onToggleChat: () => void;
+  onCreateNiche: () => void;
+  onNavigate: (view: 'trends' | 'niches' | 'research' | 'scriptwriter' | 'analytics' | 'settings') => void;
+  onSearch: (query: string) => void;
 }
 
-export function Header({ onToggleChat }: HeaderProps) {
+export function Header({ onCreateNiche, onNavigate, onSearch }: HeaderProps) {
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
 
@@ -69,19 +71,63 @@ export function Header({ onToggleChat }: HeaderProps) {
                   type="text"
                   placeholder="Search trends, memes, viral content..."
                   className="w-full pl-12 pr-6 py-4 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 focus:bg-white/10 transition-all text-white placeholder-gray-400 text-lg"
+                  onChange={(e) => onSearch(e.target.value)}
                 />
                 <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-500/10 to-purple-500/10 opacity-0 group-focus-within:opacity-100 transition-opacity pointer-events-none"></div>
               </div>
             </div>
 
             <div className="flex items-center space-x-4">
-              {/* Chat Toggle Button */}
+              {/* Navigation Buttons */}
               <button
+                onClick={() => onNavigate('trends')}
+                className="p-3 text-gray-400 hover:text-white transition-colors bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl hover:bg-white/10 hover:border-white/20"
+              >
+                Trends
+              </button>
+              <button
+                onClick={() => onNavigate('niches')}
+                className="p-3 text-gray-400 hover:text-white transition-colors bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl hover:bg-white/10 hover:border-white/20"
+              >
+                Niches
+              </button>
+              <button
+                onClick={() => onNavigate('research')}
+                className="p-3 text-gray-400 hover:text-white transition-colors bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl hover:bg-white/10 hover:border-white/20"
+              >
+                Research
+              </button>
+              <button
+                onClick={() => onNavigate('scriptwriter')}
+                className="p-3 text-gray-400 hover:text-white transition-colors bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl hover:bg-white/10 hover:border-white/20"
+              >
+                Script Writer
+              </button>
+              <button
+                onClick={() => onNavigate('analytics')}
+                className="p-3 text-gray-400 hover:text-white transition-colors bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl hover:bg-white/10 hover:border-white/20"
+              >
+                Analytics
+              </button>
+              <button
+                onClick={() => onNavigate('settings')}
+                className="p-3 text-gray-400 hover:text-white transition-colors bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl hover:bg-white/10 hover:border-white/20"
+              >
+                Settings
+              </button>
+              <button
+                onClick={onCreateNiche}
+                className="p-3 text-gray-400 hover:text-white transition-colors bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl hover:bg-white/10 hover:border-white/20"
+              >
+                Create Niche
+              </button>
+              {/* Chat Toggle Button - keeping it for now, but it's not used in DashboardPage */}
+              {/* <button
                 onClick={onToggleChat}
                 className="p-3 text-gray-400 hover:text-white transition-colors bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl hover:bg-white/10 hover:border-white/20"
               >
                 <MessageSquare className="w-6 h-6" />
-              </button>
+              </button> */}
 
               <div className="relative">
                 <button 

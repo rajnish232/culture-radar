@@ -1,14 +1,44 @@
 import React from 'react';
-import { Hash, Flame, Zap, TowerControl as GameController2, Music, Tv, DollarSign, Filter, Target } from 'lucide-react';
+import { Hash, Flame, Zap, TowerControl as GameController2, Music, Tv, DollarSign, Filter, Target, Layers, PenTool, BarChart2, Settings as SettingsIcon } from 'lucide-react';
+import { FilterState, AdvancedFilters } from './AdvancedFilters';
+import { SubscriptionTier, SubscriptionFeatures } from '../utils/useSubscription';
 
 interface SidebarProps {
   selectedCategory: string;
   onCategoryChange: (category: string) => void;
-  currentView: 'trends' | 'niches';
-  onViewChange: (view: 'trends' | 'niches') => void;
+  selectedPlatforms: string[];
+  onPlatformChange: (platforms: string[]) => void;
+  selectedApps: string[];
+  onAppChange: (apps: string[]) => void;
+  currentView: 'trends' | 'niches' | 'research' | 'scriptwriter' | 'analytics' | 'settings';
+  onViewChange: (view: 'trends' | 'niches' | 'research' | 'scriptwriter' | 'analytics' | 'settings') => void;
+  searchQuery: string;
+  onSearchChange: (query: string) => void;
+  onApplyFilters: (filters: FilterState) => void;
+  activeFilters: FilterState | null;
+  subscription: {
+    currentTier: SubscriptionTier;
+    canAccessPlatform: (platform: string) => boolean;
+    hasFeature: (feature: keyof SubscriptionFeatures) => boolean;
+    onUpgradeClick: (feature?: keyof SubscriptionFeatures | 'general') => void;
+  };
 }
 
-export function Sidebar({ selectedCategory, onCategoryChange, currentView, onViewChange }: SidebarProps) {
+export function Sidebar({
+  selectedCategory,
+  onCategoryChange,
+  selectedPlatforms,
+  onPlatformChange,
+  selectedApps,
+  onAppChange,
+  currentView,
+  onViewChange,
+  searchQuery,
+  onSearchChange,
+  onApplyFilters,
+  activeFilters,
+  subscription
+}: SidebarProps) {
   const categories = [
     { id: 'all', label: 'All Trends', icon: Flame, color: 'text-red-400', gradient: 'from-red-500 to-orange-500' },
     { id: 'memes', label: 'Memes', icon: Hash, color: 'text-purple-400', gradient: 'from-purple-500 to-pink-500' },
@@ -28,42 +58,54 @@ export function Sidebar({ selectedCategory, onCategoryChange, currentView, onVie
   return (
     <div className="w-80 bg-black/20 backdrop-blur-xl border-r border-white/10 h-screen overflow-y-auto">
       <div className="p-6">
-        {/* Premium View Toggle */}
-        <div className="flex bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-2 mb-8">
-          <button
-            onClick={() => onViewChange('trends')}
-            className={`flex-1 flex items-center justify-center space-x-2 py-3 px-4 rounded-xl text-sm font-semibold transition-all ${
-              currentView === 'trends'
-                ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg shadow-blue-500/25'
-                : 'text-gray-400 hover:text-white hover:bg-white/5'
-            }`}
-          >
-            <Flame className="w-5 h-5" />
-            <span>Trends</span>
-          </button>
-          <button
-            onClick={() => onViewChange('niches')}
-            className={`flex-1 flex items-center justify-center space-x-2 py-3 px-4 rounded-xl text-sm font-semibold transition-all ${
-              currentView === 'niches'
-                ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg shadow-blue-500/25'
-                : 'text-gray-400 hover:text-white hover:bg-white/5'
-            }`}
-          >
-            <Target className="w-5 h-5" />
-            <span>Niches</span>
-          </button>
+        {/* Main Navigation */}
+        <div className="space-y-2 mb-8">
+          {[
+            { id: 'trends', label: 'Trends', icon: Flame },
+            { id: 'niches', label: 'Niches', icon: Target },
+            { id: 'research', label: 'Deep Research', icon: Layers, premium: true, featureName: 'hasDeepResearch' },
+            { id: 'scriptwriter', label: 'Script Writer', icon: PenTool, premium: true, featureName: 'hasScriptWriter' },
+            { id: 'analytics', label: 'Analytics', icon: BarChart2, premium: true, featureName: 'hasAnalytics' },
+            { id: 'settings', label: 'Settings', icon: SettingsIcon },
+          ].map((item) => (
+            <button
+              key={item.id}
+              onClick={() => {
+                if (item.premium && !subscription.hasFeature(item.featureName as keyof SubscriptionFeatures)) {
+                  subscription.onUpgradeClick(item.featureName as keyof SubscriptionFeatures | 'general');
+                } else {
+                  onViewChange(item.id as 'trends' | 'niches' | 'research' | 'scriptwriter' | 'analytics' | 'settings');
+                }
+              }}
+              className={`w-full flex items-center space-x-3 px-5 py-3 rounded-xl text-sm font-semibold transition-all relative ${
+                currentView === item.id
+                  ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg shadow-blue-500/25'
+                  : 'text-gray-400 hover:text-white hover:bg-white/5 bg-white/5 backdrop-blur-xl border border-white/10 hover:border-white/20'
+              }`}
+            >
+              <item.icon className="w-5 h-5" />
+              <span>{item.label}</span>
+              {item.premium && !subscription.hasFeature(item.featureName as keyof SubscriptionFeatures) && (
+                <span className="ml-auto px-2 py-0.5 text-xs bg-yellow-400 text-yellow-900 rounded-full">PRO</span>
+              )}
+            </button>
+          ))}
         </div>
 
         {currentView === 'trends' && (
           <>
-            <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold text-white">Trend Categories</h2>
-              <div className="p-2 bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl">
+              {/* Advanced Filters button */}
+              <button
+                onClick={() => { /* Open advanced filters modal/sidebar */ }}
+                className="p-2 bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl hover:bg-white/10 hover:border-white/20 transition-colors"
+              >
                 <Filter className="w-5 h-5 text-gray-400" />
-              </div>
+              </button>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-3 mb-8">
               {categories.map(category => {
                 const Icon = category.icon;
                 const isSelected = selectedCategory === category.id;
@@ -90,6 +132,52 @@ export function Sidebar({ selectedCategory, onCategoryChange, currentView, onVie
                   </button>
                 );
               })}
+            </div>
+
+            {/* Platform Filters */}
+            <div className="mb-8">
+              <h3 className="text-lg font-bold text-white mb-4">Platforms</h3>
+              <div className="flex flex-wrap gap-2">
+                {['All', 'Reddit', 'Twitter', 'TikTok', 'Instagram', 'YouTube'].map(platform => (
+                  <button
+                    key={platform}
+                    onClick={() => {
+                      const lowerCasePlatform = platform.toLowerCase();
+                      if (lowerCasePlatform === 'all') {
+                        onPlatformChange(['all']);
+                      } else {
+                        if (subscription.currentTier === 'free' && !subscription.canAccessPlatform(lowerCasePlatform)) {
+                          subscription.onUpgradeClick('platforms');
+                          return;
+                        }
+                        onPlatformChange(
+                          selectedPlatforms.includes('all')
+                            ? [lowerCasePlatform]
+                            : selectedPlatforms.includes(lowerCasePlatform)
+                              ? selectedPlatforms.filter(p => p !== lowerCasePlatform)
+                              : [...selectedPlatforms, lowerCasePlatform]
+                        );
+                      }
+                    }}
+                    className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                      selectedPlatforms.includes(platform.toLowerCase()) || (selectedPlatforms.includes('all') && platform === 'All')
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                    }`}
+                  >
+                    {platform}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Advanced Filters Component */}
+            <div className="mb-8">
+              <AdvancedFilters
+                onApplyFilters={onApplyFilters}
+                onClearFilters={onClearFilters}
+                activeFilters={activeFilters}
+              />
             </div>
 
             <div className="mt-10">

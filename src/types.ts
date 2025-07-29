@@ -1,39 +1,3 @@
-export interface NicheSource {
-  id: string;
-  name: string;
-  platform: string;
-  handle: string;
-  category: string;
-  isActive: boolean;
-  lastUpdate: string;
-  avatar?: string;
-}
-
-export interface NichePage {
-  id: string;
-  name: string;
-  description: string;
-  category: string;
-  keywords: string[];
-  sources: NicheSource[];
-  isPublic: boolean;
-  color: string;
-  createdAt: string;
-}
-
-export interface NicheUpdate {
-  id: string;
-  pageId: string;
-  sourceName: string;
-  platform: string;
-  title: string;
-  content: string;
-  mediaType: 'text' | 'image' | 'video' | 'link';
-  timestamp: string;
-  engagement: string;
-  tags: string[];
-}
-
 export interface Trend {
   id: string;
   title: string;
@@ -44,5 +8,44 @@ export interface Trend {
   description: string;
   explanation?: string;
   viralScore: number;
+  tags: string[];
+  link?: string;
+}
+
+export interface NicheSource {
+  id: string;
+  name: string;
+  platform: string;
+  handle: string;
+  avatar?: string;
+  category: string;
+  isActive: boolean;
+  lastUpdate: string;
+  followerCount?: string;
+}
+
+export interface NichePage {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  sources: NicheSource[];
+  keywords: string[];
+  createdAt: string;
+  isPublic: boolean;
+  color: string;
+}
+
+export interface NicheUpdate {
+  id: string;
+  sourceId: string;
+  sourceName: string;
+  platform: string;
+  title: string;
+  content: string;
+  timestamp: string;
+  engagement: string;
+  link: string;
+  mediaType: 'text' | 'image' | 'video' | 'link';
   tags: string[];
 }

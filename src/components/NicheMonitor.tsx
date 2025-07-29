@@ -1,26 +1,25 @@
 import { useState } from 'react';
 import { Plus, Eye, Settings, Users, Clock, ExternalLink, Filter, Search } from 'lucide-react';
 import { NichePage } from '../types';
-import { getNicheUpdatesByPageId } from '../data/mockNiches';
+import { mockNichePages, getNicheUpdatesByPageId } from '../data/mockNiches';
 
 interface NicheMonitorProps {
-  niches: NichePage[];
   onCreateNiche: () => void;
 }
 
-export function NicheMonitor({ niches, onCreateNiche }: NicheMonitorProps) {
+export function NicheMonitor({ onCreateNiche }: NicheMonitorProps) {
   const [selectedPage, setSelectedPage] = useState<NichePage | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('all');
 
-  const filteredPages = niches.filter(page => {
+  const filteredPages = mockNichePages.filter(page => {
     const matchesSearch = page.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          page.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = filterCategory === 'all' || page.category.toLowerCase() === filterCategory;
     return matchesSearch && matchesCategory;
   });
 
-  const categories = ['all', ...Array.from(new Set(niches.map(p => p.category.toLowerCase())))];
+  const categories = ['all', ...Array.from(new Set(mockNichePages.map(p => p.category.toLowerCase())))];
 
   if (selectedPage) {
     return <NichePageView page={selectedPage} onBack={() => setSelectedPage(null)} />;
